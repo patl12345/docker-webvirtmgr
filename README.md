@@ -1,49 +1,32 @@
 
-## Webvirtmgr Dockerfile
-
-1. Install [Docker](https://www.docker.com/).
-
-2. Pull the image from Docker Hub
-
-```
-$ docker pull primiano/docker-webvirtmgr
-$ sudo groupadd -g 1010 webvirtmgr
-$ sudo useradd -u 1010 -g webvirtmgr -s /sbin/nologin -d /data/vm webvirtmgr
-$ sudo chown -R webvirtmgr:webvirtmgr /data/vm
-```
-
 ### Usage
 
-```
-$ docker run -d -p 8080:8080 -p 6080:6080 --name webvirtmgr -v /data/vm:/data/vm primiano/docker-webvirtmgr
-```
+1. Create a user webvirtmgr on the qemu-host
 
-### libvirtd configuration on the host
+2. Create a config directory on the docker-host 
+   ```
+   mkdir /opt/docker/webvirtmgr
+   ```
 
-```
-$ cat /etc/default/libvirt-bin
-start_libvirtd="yes"
-libvirtd_opts="-d -l"
-```
-
-```
-$ cat /etc/libvirt/libvirtd.conf
-listen_tls = 0
-listen_tcp = 1
-listen_addr = "172.17.42.1"  ## Address of docker0 veth on the host
-unix_sock_group = "libvirtd"
-unix_sock_ro_perms = "0777"
-unix_sock_rw_perms = "0770"
-auth_unix_ro = "none"
-auth_unix_rw = "none"
-auth_tcp = "none"
-auth_tls = "none"
-```
-
-```
-$ cat /etc/libvirt/qemu.conf
-# This is obsolete. Listen addr specified in VM xml.
-# vnc_listen = "0.0.0.0"
-vnc_tls = 0
-# vnc_password = ""
-```
+3. Generate the ssh key on the docker container that webvirtmgr will use to talk to the qemu-host
+   ```
+   ssh-keygen -q -f /opt/docker/webvirtmgr/.ssh/id_rsa -C "webvirtmgr@webvirtmgr" -N ""
+   ```
+   
+4. Cut/paste the public key in /opt/docker/webvirtmgr/.ssh/id_rsa.pub into /home/webvirtmgr/.ssh/authorized_keys on the qemu-host
+   or ssh-copy-id webvirtmgr@qemu-host
+   
+5. Run up the docker container with:
+   ```
+   docker run -d
+              -p 8080:8080 
+              --name webvirtmgr 
+              -e USERNAME=admin
+              -e USERNAME=AdmPassword
+              -v /opt/docker/webvirtmgr:/data/vm 
+              patl12345/webvirtmgr:latest
+   ```
+   
+5. Connect to docker container:8080
+   Username admin
+   Password AdmPassword
