@@ -8,7 +8,7 @@
    mkdir /opt/docker/webvirtmgr
    ```
 
-3. Generate the ssh key on the docker container that webvirtmgr will use to talk to the qemu-host
+3. Generate the ssh key on docker-host that webvirtmgr will use to talk to the qemu-host
    ```
    ssh-keygen -q -f /opt/docker/webvirtmgr/.ssh/id_rsa -C "webvirtmgr@webvirtmgr" -N ""
    ```
